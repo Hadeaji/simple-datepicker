@@ -15,17 +15,18 @@ import {
 import DecadeYearPicker from "./YearPickers/DecadeYearPicker";
 import ScrollYearPicker from "./YearPickers/ScrollYearPicker";
 import DynamicYearPicker from "./YearPickers/DynamicYearPicker";
+import { ArrowLeft, ArrowRight, Calendar } from 'lucide-react';
 
-const daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"];
+const daysOfWeek = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 const getStartEndDate = (currentMonth: Date) => {
   const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-  const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
   const dayOfWeek = start.getDay();
   const startDate = addDays(start, -dayOfWeek);
   const endDate = addDays(startDate, 41); // 6 weeks
   return { start: startDate, end: endDate };
 };
+
 
 interface Props {
   value: string;
@@ -51,6 +52,7 @@ const CustomDatePicker = ({
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [inputValue, setInputValue] = useState("");
+  const [isDecadeView, setIsDecadeView] = useState(false);
 
   useEffect(() => {
     const parsed = value ? new Date(value) : null;
@@ -97,6 +99,7 @@ const CustomDatePicker = ({
     while (day <= end) {
       const cloneDay = new Date(day);
       const formatted = format(cloneDay, "MM/dd/yyyy");
+      const isToday = isSameDay(cloneDay, today);
       const isSelected = value && isSameDay(new Date(value), cloneDay);
       const isOutOfMonth = !isSameMonth(cloneDay, currentMonth);
       const isDisabled =
@@ -111,10 +114,11 @@ const CustomDatePicker = ({
             onChange(formatted);
             setIsOpen(false);
           }}
-          className={`w-8 h-8 text-sm rounded-full flex items-center justify-center
-            ${isSelected ? "bg-blue-600 text-white" : ""}
-            ${isOutOfMonth ? "text-gray-400" : ""}
-            ${isDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-100"}`}
+          className={`m-auto w-8 h-8 text-xs rounded-full flex items-center justify-center
+            ${isSelected ? "bg-[#1B8354] text-white" : ""}
+            ${isToday && !isSelected ? "border-2 border-[#1B8354] text-[#1B8354]" : ""}
+            ${isOutOfMonth ? "text-[#64748B]" : ""}
+            ${isDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-[#88D8AD]"}`}
         >
           {format(cloneDay, "d")}
         </button>
@@ -125,7 +129,7 @@ const CustomDatePicker = ({
     return (
       <div className="grid grid-cols-7 gap-1">
         {daysOfWeek.map((d, idx) => (
-          <div key={`${idx}-${d}`} className="text-center font-bold text-xs">
+          <div key={`${idx}-${d}`} className="flex justify-center items-center text-xs text-[#64748B] h-[32px] mb-1">
             {d}
           </div>
         ))}
@@ -157,10 +161,34 @@ const CustomDatePicker = ({
           <DecadeYearPicker
             currentYear={currentMonth.getFullYear()}
             setYear={(year) => setCurrentMonth(setYear(currentMonth, year))}
+            isDecadeView={isDecadeView}
+            setIsDecadeView={setIsDecadeView}
           />
         );
     }
   };
+
+  // Determine if we should show the decade grid instead of days
+  const shouldShowDecadeGrid = yearPickerMode === "decade" && isDecadeView;
+
+  function renderMonthsNavigation(): import("react").ReactNode {
+    return (
+      <div className="flex justify-between items-center">
+        <button
+          onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+          className="text-xl p-2 hover:bg-[#f5f5f5]"
+        >
+          <ArrowLeft size={16} strokeWidth={1} absoluteStrokeWidth />
+        </button>
+        <button
+          onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+          className="text-xl p-2 hover:bg-[#f5f5f5]"
+        >
+          <ArrowRight size={16} strokeWidth={1} absoluteStrokeWidth />
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="relative w-[228px]">
@@ -176,31 +204,35 @@ const CustomDatePicker = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="absolute right-2 top-2.5 text-gray-600"
+        className="absolute right-2 top-3 text-gray-600"
       >
-        📅
+        <Calendar size={16} strokeWidth={1} absoluteStrokeWidth />
       </button>
       {isOpen && (
-        <div className="absolute z-10 bg-white border rounded shadow mt-2 p-2 w-[228px]">
-          <div className="flex items-center justify-between mb-2">
-            <button
-              onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              className="text-xl px-2"
-            >
-              ‹
-            </button>
-            <span className="font-medium">
-              {format(currentMonth, "MMMM")}
-            </span>
+        <div className="absolute z-10 bg-white rounded shadow mt-2 p-2 w-[280px]">
+          <div className={`flex items-center gap-1 py-2 ${!shouldShowDecadeGrid && "h-[40px]"} justify-between ${shouldShowDecadeGrid && 'flex-col'}`}>
+
+            {!!shouldShowDecadeGrid ? (
+              <button
+                onClick={() => setIsDecadeView(false)}
+                className="text-sm text-[#64748B] hover:text-gray-700"
+              >
+                Back
+              </button>
+            ) :
+              <span className="font-medium pl-2 font-semibold text-sm text-[#161616]">
+                {format(currentMonth, "MMMM")}
+              </span>
+            }
             {renderYearPicker()}
-            <button
-              onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              className="text-xl px-2"
-            >
-              ›
-            </button>
+            <div
+              id="spacer"
+              className="flex flex-grow-1 w-[100%]"
+            />
+            {!shouldShowDecadeGrid && renderMonthsNavigation()}
+
           </div>
-          {renderDays()}
+          {!shouldShowDecadeGrid && renderDays()}
         </div>
       )}
     </div>

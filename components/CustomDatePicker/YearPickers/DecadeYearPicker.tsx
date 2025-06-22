@@ -1,43 +1,45 @@
-import React, { useState } from "react";
+import React from "react";
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface DecadeYearPickerProps {
   currentYear: number;
   setYear: (year: number) => void;
+  isDecadeView: boolean;
+  setIsDecadeView: (isDecadeView: boolean) => void;
 }
 
-const DecadeYearPicker: React.FC<DecadeYearPickerProps> = ({ currentYear, setYear }) => {
-  const [isDecadeView, setIsDecadeView] = useState(false); // Track whether to show the decade grid or not
-  const [decadeStart, setDecadeStart] = useState(Math.floor(currentYear / 10) * 10); // Start year of the current decade
+const DecadeYearPicker: React.FC<DecadeYearPickerProps> = ({ 
+  currentYear, 
+  setYear, 
+  isDecadeView, 
+  setIsDecadeView 
+}) => {
+  const [decadeStart, setDecadeStart] = React.useState(Math.floor(currentYear / 10) * 10);
 
-  const years = Array.from({ length: 12 }, (_, index) => decadeStart + index); // 12 years grid
+  const years = Array.from({ length: 12 }, (_, index) => decadeStart + index);
 
-  // Toggle to show/hide the decade grid
   const handleYearClick = () => {
     setIsDecadeView(true);
   };
 
-  // Select a year and return to the normal calendar
   const handleYearSelect = (year: number) => {
     setYear(year);
     setIsDecadeView(false);
   };
 
-  // Move to the previous decade (10 years back)
   const handlePrevDecade = () => {
     setDecadeStart(decadeStart - 10);
   };
 
-  // Move to the next decade (10 years forward)
   const handleNextDecade = () => {
     setDecadeStart(decadeStart + 10);
   };
 
   return (
-    <div>
-      {/* Show selected year or decade grid */}
+    <div className="text-[#161616] w-[100%]">
       {!isDecadeView ? (
         <button
-          className="px-4 py-2 text-xl font-bold text-center bg-gray-200 rounded-md w-full hover:bg-gray-300"
+          className="px-2 py-1 text-sm text-center font-semibold bg-white rounded-md hover:bg-[#f5f5f5]"
           onClick={handleYearClick}
         >
           {currentYear}
@@ -45,27 +47,25 @@ const DecadeYearPicker: React.FC<DecadeYearPickerProps> = ({ currentYear, setYea
       ) : (
         <div>
           <div className="flex justify-between items-center mb-2">
-            {/* Left button to move back a decade */}
             <button
-              className="px-2 py-1 bg-gray-200 rounded-md hover:bg-gray-300"
+              className="px-2 py-1 bg-gray-50 rounded-md hover:bg-[#f5f5f5]"
               onClick={handlePrevDecade}
             >
-              &lt;
+              <ChevronLeft size={16} strokeWidth={1} absoluteStrokeWidth/>
             </button>
-            <span className="text-lg font-bold">{decadeStart} - {decadeStart + 11}</span>
-            {/* Right button to move forward a decade */}
+            <span className="text-md">{decadeStart} - {decadeStart + 11}</span>
             <button
-              className="px-2 py-1 bg-gray-200 rounded-md hover:bg-gray-300"
+              className="px-2 py-1 bg-gray-50 rounded-md hover:bg-[#f5f5f5]"
               onClick={handleNextDecade}
             >
-              &gt;
+              <ChevronRight size={16} strokeWidth={1} absoluteStrokeWidth />
             </button>
           </div>
           <div className="grid grid-cols-3 gap-2 mt-4">
             {years.map((year) => (
               <button
                 key={year}
-                className="px-4 py-2 text-sm font-semibold rounded-md bg-gray-200 hover:bg-gray-300"
+                className="px-4 py-2 text-sm rounded-md bg-gray-100 hover:bg-[#88D8AD] hover:text-white"
                 onClick={() => handleYearSelect(year)}
               >
                 {year}

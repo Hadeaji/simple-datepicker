@@ -14,8 +14,8 @@ export default function Home() {
         <CustomDatePicker
           value={date}
           onChange={(newDate: any) => setDate(newDate)}
-          minDate="01/01/2000"
-          maxDate="12/31/2030"
+          minDate="01/01/1000"
+          // maxDate="12/31/2030"
           disabled={false}
           yearPickerMode="decade"
         />
